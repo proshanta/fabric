@@ -23,6 +23,7 @@
 #   - peer - builds the fabric peer binary
 #   - membersrvc - builds the membersrvc binary
 #   - unit-test - runs the go-test based unit tests
+#   - unit-tests - runs go-test based unit-tests and node-sdk-unit-tests
 #   - behave - runs the behave test
 #   - behave-deps - ensures pre-requisites are availble for running behave manually
 #   - gotools - installs go tools like golint
@@ -92,6 +93,13 @@ membersrvc-image: build/image/membersrvc/.dummy
 
 unit-test: peer-image gotools
 	@./scripts/goUnitTests.sh $(DOCKER_TAG) "$(GO_LDFLAGS)"
+
+node-sdk: sdk/node
+
+node-sdk-unit-tests: peer membersrvc
+	cd sdk/node && $(MAKE) unit-tests
+
+unit-tests: unit-test node-sdk-unit-tests
 
 .PHONY: images
 images: $(patsubst %,build/image/%/.dummy, $(IMAGES))
@@ -251,10 +259,6 @@ images-clean: $(patsubst %,%-image-clean, $(SUBIMAGES))
 
 images-scrub: $(patsubst %,%-image-clean, $(IMAGES))
 
-node-sdk: sdk/node
-
-node-sdk-unit-tests: peer membersrvc
-	cd sdk/node && $(MAKE) unit-tests
 
 .PHONY: $(SUBDIRS:=-clean)
 $(SUBDIRS:=-clean):
